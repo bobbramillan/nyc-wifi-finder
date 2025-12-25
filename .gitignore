@@ -1,0 +1,33 @@
+# Xcode
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcworkspace/contents.xcworkspacedata
+*.xcworkspace/*
+!*.xcworkspace/xcshareddata/
+
+# User settings
+xcuserdata/
+
+# Build files
+build/
+DerivedData/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+.build/
+Packages/
+Package.pins
+Package.resolved
+
+# CocoaPods
+Pods/
+
+# macOS
+.DS_Store
+
+# App icon source files (optional - keep or remove)
+# *.sketch
+# *.fig
