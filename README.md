@@ -22,6 +22,7 @@ An iOS app to find free public WiFi hotspots across New York City.
 <p align="center">
   <img src="screenshots/queens.png" width="250" />
   <img src="screenshots/hudson-yards.png" width="250" />
+  <img src="screenshots/hy-near.png" width="250" />
 </p>
 
 ## Installation
