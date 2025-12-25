@@ -34,7 +34,7 @@ An iOS app to find free public WiFi hotspots across New York City.
 
 ## Data Source
 
-WiFi hotspot data from [NYC Open Data](https://data.cityofnewyork.us/City-Government/NYC-Wi-Fi-Hotspot-Locations/yjub-udmw)
+WiFi hotspot data from [NYC Open Data](https://data.cityofnewyork.us/City-Government/NYC-Wi-Fi-Hotspot-Locations/yjub-udmw/about_data)
 
 ## License
 
