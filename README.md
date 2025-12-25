@@ -2,14 +2,6 @@
 
 An iOS app to find free public WiFi hotspots across New York City.
 
-## Features
-
-- 🗺️ Interactive map with 500+ NYC WiFi locations
-- 📍 Real-time user location tracking
-- 🔍 Filter by borough and neighborhood
-- 📏 Find nearest WiFi hotspot
-- ℹ️ Detailed information for each location
-
 ## Tech Stack
 
 - Swift & SwiftUI
@@ -24,6 +16,15 @@ An iOS app to find free public WiFi hotspots across New York City.
   <img src="screenshots/hudson-yards.png" width="250" />
   <img src="screenshots/hy-near.png" width="250" />
 </p>
+
+## Features
+
+- 🗺️ Interactive map with 500+ NYC WiFi locations
+- 📍 Real-time user location tracking
+- 🔍 Filter by borough and neighborhood
+- 📏 Find nearest WiFi hotspot
+- ℹ️ Detailed information for each location
+
 
 ## Installation
 
