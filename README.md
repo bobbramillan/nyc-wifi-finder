@@ -1,6 +1,6 @@
 # NYC WiFi Finder 📶
 
-An iOS app to find free public WiFi hotspots across New York City.
+An iOS app developed by Bavanan Bramillan to find free public WiFi hotspots across New York City.
 
 ## Tech Stack
 
