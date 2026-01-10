@@ -5,7 +5,6 @@
 //  Created by Bavanan Bramillan on 12/24/25.
 //
 
-
 import Foundation
 import CoreLocation
 

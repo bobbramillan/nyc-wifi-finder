@@ -1,5 +1,5 @@
 //
-//  ContentView.swift
+//  MapView.swift
 //  NYCWiFiFinder
 //
 //  Created by Bavanan Bramillan on 12/24/25.
@@ -8,20 +8,22 @@
 import SwiftUI
 import MapKit
 
-struct ContentView: View {
+struct MapView: View {
+    @Binding var allWiFiSpots: [WiFiSpot]
+    @ObservedObject var locationManager: LocationManager
+    @ObservedObject var bookmarkManager: BookmarkManager
+    @ObservedObject var visitHistoryManager: VisitHistoryManager
+    
     @State private var position: MapCameraPosition = .region(
         MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 40.7180, longitude: -73.9870), // Lower East Side
+            center: CLLocationCoordinate2D(latitude: 40.7180, longitude: -73.9870),
             span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
         )
     )
     
-    @State private var allWiFiSpots: [WiFiSpot] = []
     @State private var selectedBorough: String = "Manhattan"
     @State private var selectedNeighborhood: String = "Lower East Side"
     @State private var selectedSpot: WiFiSpot?
-    @StateObject private var locationManager = LocationManager()
-    private let wifiService = WiFiService()
     
     var filteredSpots: [WiFiSpot] {
         var spots = allWiFiSpots.filter { $0.borough == selectedBorough }
@@ -46,7 +48,7 @@ struct ContentView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 0) {
-                // Improved filter UI
+                // Filter UI
                 VStack(spacing: 12) {
                     HStack {
                         Text("Filter WiFi Spots")
@@ -67,7 +69,6 @@ struct ContentView: View {
                             .pickerStyle(.menu)
                             .tint(.blue)
                             .onChange(of: selectedBorough) { oldValue, newValue in
-                                // Reset to "All" when borough changes
                                 selectedNeighborhood = "All"
                                 moveToBorough(newValue)
                             }
@@ -104,7 +105,7 @@ struct ContentView: View {
                 Map(position: $position, selection: $selectedSpot) {
                     ForEach(filteredSpots) { spot in
                         Marker(spot.name, coordinate: spot.coordinate)
-                            .tint(.blue)
+                            .tint(bookmarkManager.isBookmarked(spot) ? .yellow : .blue)
                             .tag(spot)
                     }
                     
@@ -140,64 +141,20 @@ struct ContentView: View {
             }
         }
         .sheet(item: $selectedSpot) { spot in
-            VStack(spacing: 16) {
-                // WiFi icon at top
-                Image(systemName: "wifi")
-                    .font(.system(size: 40))
-                    .foregroundColor(.blue)
-                
-                Text(spot.name)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .multilineTextAlignment(.center)
-                
-                VStack(spacing: 8) {
-                    HStack {
-                        Image(systemName: "location.fill")
-                            .foregroundColor(.secondary)
-                        Text(spot.location)
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    HStack {
-                        Image(systemName: "map.fill")
-                            .foregroundColor(.blue)
-                        Text("\(spot.neighborhood), \(spot.borough)")
-                            .font(.subheadline)
-                            .foregroundColor(.blue)
-                    }
-                    
-                    if let userLocation = locationManager.userLocation {
-                        let dist = distance(from: userLocation, to: spot.coordinate)
-                        HStack {
-                            Image(systemName: "figure.walk")
-                                .foregroundColor(.green)
-                            Text(String(format: "%.0f meters away", dist))
-                                .font(.subheadline)
-                                .foregroundColor(.green)
-                        }
-                    }
-                }
-                
-                Button(action: {
+            WiFiSpotDetailSheet(
+                spot: spot,
+                userLocation: locationManager.userLocation,
+                isBookmarked: bookmarkManager.isBookmarked(spot),
+                onBookmarkToggle: {
+                    bookmarkManager.toggleBookmark(spot)
+                },
+                onDismiss: {
                     selectedSpot = nil
-                }) {
-                    Text("Close")
-                        .fontWeight(.semibold)
-                        .foregroundColor(.white)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.blue)
-                        .cornerRadius(10)
                 }
-                .padding(.top, 8)
+            )
+            .onAppear {
+                visitHistoryManager.recordVisit(spot)
             }
-            .padding()
-            .presentationDetents([.height(350)])
-        }
-        .task {
-            allWiFiSpots = await wifiService.fetchNYCWiFiSpots()
         }
     }
     
@@ -242,8 +199,4 @@ struct ContentView: View {
         let toLocation = CLLocation(latitude: to.latitude, longitude: to.longitude)
         return fromLocation.distance(from: toLocation)
     }
-}
-
-#Preview {
-    ContentView()
 }
