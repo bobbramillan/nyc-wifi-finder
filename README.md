@@ -44,8 +44,9 @@ The app currently works standalone with local data persistence. Backend integrat
 ## Screenshots
 
 <p align="center">
-  <img src="screenshots/queens.png" width="250" />
-  <img src="screenshots/hudson-yards.png" width="250" />
+  <img src="screenshots/saved.png" width="250" />
+  <img src="screenshots/suggested.png" width="250" />
+  <img src="screenshots/app-home.png" width="250" />
   <img src="screenshots/hy-near.png" width="250" />
 </p>
 
