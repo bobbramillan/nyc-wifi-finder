@@ -33,6 +33,8 @@ This means recommendations improve the more you bookmark, without any login or a
 
 ## Running it locally
 
+> **Note:** This app requires the backend to be running locally to load WiFi spots and recommendations. Start the backend first before running the iOS app. See the [backend repository](https://github.com/bobbramillan/nyc-wifi-finder-backend) for setup instructions.
+
 ### Backend
 
 You'll need Node.js and a free MongoDB Atlas account and Voyage AI API key.
