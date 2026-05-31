@@ -29,6 +29,8 @@ This means recommendations improve the more you bookmark, without any login or a
 - Voyage AI (vector embeddings)
 - NYC Open Data API (WiFi hotspot data)
 
+→ [Backend repository](https://github.com/bobbramillan/nyc-wifi-finder-backend)
+
 ## Running it locally
 
 ### Backend
