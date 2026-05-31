@@ -2,25 +2,20 @@
 //  WiFiSpot.swift
 //  NYCWiFiFinder
 //
-//  Created by Bavanan Bramillan on 12/24/25.
-//
 
 import Foundation
 import CoreLocation
 
-struct WiFiSpot: Identifiable, Hashable {
-    let id = UUID()
+struct WiFiSpot: Identifiable, Hashable, Codable {
+    let id: Int
     let name: String
     let location: String
     let borough: String
     let neighborhood: String
-    let coordinate: CLLocationCoordinate2D
-    
-    static func == (lhs: WiFiSpot, rhs: WiFiSpot) -> Bool {
-        lhs.id == rhs.id
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
+    let latitude: Double
+    let longitude: Double
+
+    var coordinate: CLLocationCoordinate2D {
+        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 }

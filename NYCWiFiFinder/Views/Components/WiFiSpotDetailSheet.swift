@@ -2,8 +2,6 @@
 //  WiFiSpotDetailSheet.swift
 //  NYCWiFiFinder
 //
-//  Created by Bavanan Bramillan on 12/24/25.
-//
 
 import SwiftUI
 import CoreLocation
@@ -14,19 +12,18 @@ struct WiFiSpotDetailSheet: View {
     let isBookmarked: Bool
     let onBookmarkToggle: () -> Void
     let onDismiss: () -> Void
-    
+
     var body: some View {
         VStack(spacing: 16) {
-            // WiFi icon at top
             Image(systemName: "wifi")
                 .font(.system(size: 40))
                 .foregroundColor(.blue)
-            
+
             Text(spot.name)
                 .font(.title2)
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
-            
+
             VStack(spacing: 8) {
                 HStack {
                     Image(systemName: "location.fill")
@@ -35,7 +32,7 @@ struct WiFiSpotDetailSheet: View {
                         .font(.body)
                         .foregroundColor(.secondary)
                 }
-                
+
                 HStack {
                     Image(systemName: "map.fill")
                         .foregroundColor(.blue)
@@ -43,20 +40,18 @@ struct WiFiSpotDetailSheet: View {
                         .font(.subheadline)
                         .foregroundColor(.blue)
                 }
-                
-                if let userLocation = userLocation {
-                    let dist = distance(from: userLocation, to: spot.coordinate)
+
+                if let userLocation {
                     HStack {
                         Image(systemName: "figure.walk")
                             .foregroundColor(.green)
-                        Text(String(format: "%.0f meters away", dist))
+                        Text(userLocation.formattedDistance(to: spot.coordinate))
                             .font(.subheadline)
                             .foregroundColor(.green)
                     }
                 }
             }
-            
-            // Bookmark button
+
             Button(action: onBookmarkToggle) {
                 HStack {
                     Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
@@ -69,7 +64,7 @@ struct WiFiSpotDetailSheet: View {
                 .background(isBookmarked ? Color.yellow.opacity(0.2) : Color.blue.opacity(0.1))
                 .cornerRadius(10)
             }
-            
+
             Button(action: onDismiss) {
                 Text("Close")
                     .fontWeight(.semibold)
@@ -82,11 +77,5 @@ struct WiFiSpotDetailSheet: View {
         }
         .padding()
         .presentationDetents([.height(400)])
-    }
-    
-    func distance(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) -> Double {
-        let fromLocation = CLLocation(latitude: from.latitude, longitude: from.longitude)
-        let toLocation = CLLocation(latitude: to.latitude, longitude: to.longitude)
-        return fromLocation.distance(from: toLocation)
     }
 }

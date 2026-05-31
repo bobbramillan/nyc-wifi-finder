@@ -1,106 +1,86 @@
 # NYC WiFi Finder
 
-An iOS app to discover free public WiFi hotspots across New York City with AI-powered personalized recommendations.
+An iOS app to discover free public WiFi hotspots across New York City, with personalized recommendations powered by vector similarity search.
 
-## Status
+## What it does
 
-**iOS App:** Complete and functional  
-**Backend API:** Planned (Spring Boot + PostgreSQL)
-
-The app currently works standalone with local data persistence. Backend integration is planned for cross-device sync.
-
-## Tech Stack
-
-**iOS (Complete)**
-- Swift & SwiftUI
-- MapKit
-- CoreLocation
-- Combine
-- UserDefaults
-
-**Backend (Planned)**
-- Spring Boot
-- PostgreSQL
-- JWT Authentication
-- Spring Security
-
-## Features
-
-**Current**
-- Interactive map with 500+ NYC WiFi locations across all 5 boroughs
-- Real-time location tracking
+- Browse 500+ NYC public WiFi spots on an interactive map
 - Filter by borough and neighborhood
-- Find nearest WiFi hotspot
-- Bookmark system (local storage)
-- Visit history tracking
-- AI-powered recommendations based on location, preferences, and behavior
-- Usage statistics
+- Get personalized "For You" recommendations based on your bookmarks
+- Save spots to bookmarks, synced to the cloud
 
-**Planned**
-- User authentication
-- Cloud sync
-- Enhanced AI with Claude API via Model Context Protocol
+## How the recommendations work
 
-## Screenshots
+When you bookmark spots, the app builds a taste profile by averaging the vector embeddings of those spots. It then finds the most similar unbookmarked spots in MongoDB using cosine similarity. Embeddings are generated via Voyage AI's `voyage-3-lite` model — each spot is converted to a text description and embedded into a 1024-dimension vector at seed time.
 
-<p align="center">
-  <img src="screenshots/saved.png" width="250" />
-  <img src="screenshots/suggested.png" width="250" />
-  <img src="screenshots/app-home.png" width="250" />
-  <img src="screenshots/hy-near.png" width="250" />
-</p>
+This means recommendations improve the more you bookmark, without any login or account required. Each device gets a unique ID via `UIDevice.identifierForVendor`.
 
-## Installation
+## Tech stack
 
-**Requirements**
-- iOS 17.0+
-- Xcode 15.0+
+**iOS**
+- Swift & SwiftUI
+- MapKit + CoreLocation
+- URLSession for REST API calls
+- Combine + `@Published` for reactive state
 
-**Steps**
-1. Clone the repository
+**Backend**
+- Node.js + Express
+- MongoDB + Mongoose (bookmarks + WiFi spot embeddings)
+- Voyage AI (vector embeddings)
+- NYC Open Data API (WiFi hotspot data)
+
+## Running it locally
+
+### Backend
+
+You'll need Node.js and a free MongoDB Atlas account and Voyage AI API key.
+
 ```bash
-git clone https://github.com/bobbramillan/nyc-wifi-finder.git
-cd nyc-wifi-finder
+cd nyc-wifi-finder-backend
+npm install
 ```
 
-2. Open in Xcode
+Create a `.env` file:
+
+```
+PORT=3000
+NYC_WIFI_API=https://data.cityofnewyork.us/resource/yjub-udmw.json
+MONGODB_URI=your_mongodb_connection_string
+VOYAGE_API_KEY=your_voyage_api_key
+```
+
 ```bash
-open NYCWiFiFinder.xcodeproj
+npm run dev
 ```
 
-3. Run on simulator or device
+On first run, the server will automatically seed all 500 WiFi spots with embeddings into MongoDB. This takes around 30 minutes due to Voyage AI's free tier rate limit (3 requests/min). It only runs once — subsequent starts skip seeding.
 
-## Recommendation Algorithm
+### iOS app
 
-The app uses a weighted scoring system:
+- Xcode 16+ and iOS 17+
+- Open `NYCWiFiFinder.xcodeproj`
+- Set your Apple ID under Signing & Capabilities
+- Make sure the backend is running locally
+- Select an iPhone simulator and hit Run
 
-- Proximity (40%): Prioritizes nearby locations
-- Borough preference (25%): Learns favorite borough
-- Neighborhood patterns (20%): Identifies frequent areas
-- Bookmark similarity (15%): Suggests similar spots
+## API endpoints
 
-## Data Source
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/wifi` | All 500 NYC WiFi spots |
+| GET | `/api/wifi/:id` | Single spot by ID |
+| GET | `/api/bookmarks?userID=x` | Get bookmarks for a device |
+| POST | `/api/bookmarks` | Save a bookmark |
+| DELETE | `/api/bookmarks/:id?userID=x` | Remove a bookmark |
+| POST | `/api/recommendations` | Get personalized recommendations |
 
-WiFi hotspot data from [NYC Open Data](https://data.cityofnewyork.us/City-Government/NYC-Wi-Fi-Hotspot-Locations/yjub-udmw/about_data)
+## Data source
 
-## Project Structure
-```
-NYCWiFiFinder/
-├── Models/
-├── Services/
-├── Managers/
-├── Views/
-│   ├── MapView
-│   ├── ForYouView
-│   ├── BookmarksView
-│   └── Components/
-└── Extensions/
-```
+[NYC Open Data — WiFi Hotspot Locations](https://data.cityofnewyork.us/City-Government/NYC-Wi-Fi-Hotspot-Locations/yjub-udmw/about_data)
 
 ## Author
 
-Bavanan Bramillan  
-[GitHub](https://github.com/bobbramillan)
+Bavanan Bramillan · [GitHub](https://github.com/bobbramillan)
 
 ## License
 

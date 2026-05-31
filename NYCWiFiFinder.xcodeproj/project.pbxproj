@@ -10,9 +10,22 @@
 		25A500B22EFCB70900D62607 /* NYCWiFiFinder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NYCWiFiFinder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		25432F692FCBE44300AE269D /* Exceptions for "NYCWiFiFinder" folder in "NYCWiFiFinder" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 25A500B12EFCB70900D62607 /* NYCWiFiFinder */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		25A500B42EFCB70900D62607 /* NYCWiFiFinder */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				25432F692FCBE44300AE269D /* Exceptions for "NYCWiFiFinder" folder in "NYCWiFiFinder" target */,
+			);
 			path = NYCWiFiFinder;
 			sourceTree = "<group>";
 		};
@@ -251,8 +264,10 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9YP4VNUU95;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NYCWiFiFinder/Info.plist;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to find nearby WiFi hotspots";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -283,8 +298,10 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9YP4VNUU95;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NYCWiFiFinder/Info.plist;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to find nearby WiFi hotspots";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

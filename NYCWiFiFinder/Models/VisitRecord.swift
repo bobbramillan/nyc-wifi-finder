@@ -2,13 +2,11 @@
 //  VisitRecord.swift
 //  NYCWiFiFinder
 //
-//  Created by Bavanan Bramillan on 12/24/25.
-//
 
 import Foundation
 
 struct VisitRecord: Codable, Equatable {
-    let spotID: UUID
+    let spotID: Int
     let spotName: String
     let borough: String
     let neighborhood: String

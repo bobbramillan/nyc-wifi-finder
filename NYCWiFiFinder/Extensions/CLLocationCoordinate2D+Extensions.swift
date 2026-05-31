@@ -2,20 +2,21 @@
 //  CLLocationCoordinate2D+Extensions.swift
 //  NYCWiFiFinder
 //
-//  Created by Bavanan Bramillan on 12/24/25.
-//
 
 import CoreLocation
 
-extension CLLocationCoordinate2D: @retroactive Equatable {
-    public static func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D) -> Bool {
-        lhs.latitude == rhs.latitude && lhs.longitude == rhs.longitude
+extension CLLocationCoordinate2D {
+    /// Returns the distance in meters between two coordinates.
+    func distance(to other: CLLocationCoordinate2D) -> Double {
+        CLLocation(latitude: latitude, longitude: longitude)
+            .distance(from: CLLocation(latitude: other.latitude, longitude: other.longitude))
     }
-}
 
-extension CLLocationCoordinate2D: @retroactive Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(latitude)
-        hasher.combine(longitude)
+    /// Returns a human-readable distance string (e.g. "350m" or "1.2 km").
+    func formattedDistance(to other: CLLocationCoordinate2D) -> String {
+        let meters = distance(to: other)
+        return meters < 1000
+            ? "\(Int(meters))m away"
+            : String(format: "%.1f km away", meters / 1000)
     }
 }

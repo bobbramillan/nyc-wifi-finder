@@ -2,69 +2,41 @@
 //  WiFiService.swift
 //  NYCWiFiFinder
 //
-//  Created by Bavanan Bramillan on 12/24/25.
-//
 
 import Foundation
-import CoreLocation
+
+enum WiFiServiceError: Error {
+    case invalidURL
+    case networkError(Error)
+    case decodingError(Error)
+}
 
 class WiFiService {
-    func fetchNYCWiFiSpots() async -> [WiFiSpot] {
-        // NYC Open Data API for public WiFi hotspots
-        let urlString = "https://data.cityofnewyork.us/resource/yjub-udmw.json?$limit=500"
-        
-        guard let url = URL(string: urlString) else {
-            return []
+    func fetchNYCWiFiSpots() async throws -> [WiFiSpot] {
+        guard let url = URL(string: APIConfig.Endpoints.wifi) else {
+            throw WiFiServiceError.invalidURL
         }
-        
+
+        let data: Data
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            let decoder = JSONDecoder()
-            let response = try decoder.decode([NYCWiFiResponse].self, from: data)
-            
-            return response.compactMap { item in
-                guard let lat = item.latitude,
-                      let lon = item.longitude,
-                      let latDouble = Double(lat),
-                      let lonDouble = Double(lon) else {
-                    return nil
-                }
-                
-                let boroughName = mapBoroughCode(item.borough)
-                
-                return WiFiSpot(
-                    name: item.name ?? "Public WiFi",
-                    location: item.location ?? "NYC",
-                    borough: boroughName,
-                    neighborhood: item.ntaname ?? "Unknown",
-                    coordinate: CLLocationCoordinate2D(latitude: latDouble, longitude: lonDouble)
-                )
-            }
+            let (fetched, _) = try await URLSession.shared.data(from: url)
+            data = fetched
         } catch {
-            print("Error fetching WiFi data: \(error)")
-            return []
+            throw WiFiServiceError.networkError(error)
         }
-    }
-    
-    private func mapBoroughCode(_ code: String?) -> String {
-        guard let code = code else { return "Unknown" }
-        
-        switch code {
-        case "1": return "Manhattan"
-        case "2": return "The Bronx"
-        case "3": return "Brooklyn"
-        case "4": return "Queens"
-        case "5": return "Staten Island"
-        default: return "Unknown"
+
+        do {
+            let response = try JSONDecoder().decode(WiFiAPIResponse.self, from: data)
+            return response.data
+        } catch {
+            throw WiFiServiceError.decodingError(error)
         }
     }
 }
 
-struct NYCWiFiResponse: Codable {
-    let name: String?
-    let location: String?
-    let latitude: String?
-    let longitude: String?
-    let borough: String?
-    let ntaname: String?
+// Matches the { success, count, data } shape our backend returns
+struct WiFiAPIResponse: Codable {
+    let success: Bool
+    let count: Int
+    let data: [WiFiSpot]
 }

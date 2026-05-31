@@ -2,8 +2,6 @@
 //  ForYouView.swift
 //  NYCWiFiFinder
 //
-//  Created by Bavanan Bramillan on 12/24/25.
-//
 
 import SwiftUI
 import CoreLocation
@@ -13,135 +11,109 @@ struct ForYouView: View {
     @ObservedObject var locationManager: LocationManager
     @ObservedObject var bookmarkManager: BookmarkManager
     @ObservedObject var visitHistoryManager: VisitHistoryManager
-    
+
+    @StateObject private var engine = RecommendationEngine()
     @State private var selectedSpot: WiFiSpot?
-    @State private var recommendations: [Recommendation] = []
-    
-    private let recommendationEngine = RecommendationEngine()
-    
+
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 20) {
-                    // Header
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Image(systemName: "sparkles")
-                                .font(.title)
-                                .foregroundColor(.blue)
-                            Text("For You")
-                                .font(.largeTitle)
-                                .fontWeight(.bold)
-                        }
-                        
-                        Text("Personalized WiFi recommendations based on your preferences")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                VStack(alignment: .leading, spacing: 16) {
+                    // Stat cards
+                    HStack(spacing: 12) {
+                        StatCard(
+                            icon: "clock",
+                            title: "Visited",
+                            value: "\(visitHistoryManager.visitHistory.count)",
+                            color: .blue
+                        )
+                        StatCard(
+                            icon: "map",
+                            title: "Favorite",
+                            value: visitHistoryManager.mostVisitedBorough() ?? "—",
+                            color: .green
+                        )
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal)
-                    .padding(.top)
-                    
-                    // Stats cards
-                    if !visitHistoryManager.visitHistory.isEmpty {
-                        HStack(spacing: 12) {
-                            StatCard(
-                                icon: "clock.fill",
-                                title: "Visited",
-                                value: "\(visitHistoryManager.visitHistory.count)",
-                                color: .blue
-                            )
-                            
-                            if let favBorough = visitHistoryManager.mostVisitedBorough() {
-                                StatCard(
-                                    icon: "map.fill",
-                                    title: "Favorite",
-                                    value: favBorough,
-                                    color: .green
-                                )
-                            }
+
+                    // Recommendations
+                    if engine.isLoading {
+                        VStack(spacing: 12) {
+                            ProgressView()
+                            Text("Finding spots for you…")
+                                .foregroundColor(.secondary)
+                                .font(.subheadline)
                         }
-                        .padding(.horizontal)
-                    }
-                    
-                    // Recommendations list
-                    if recommendations.isEmpty {
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 40)
+
+                    } else if let error = engine.error {
+                        VStack(spacing: 12) {
+                            Image(systemName: "exclamationmark.triangle")
+                                .font(.system(size: 40))
+                                .foregroundColor(.orange)
+                            Text("Couldn't load recommendations")
+                                .font(.headline)
+                            Text(error)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                            Button("Retry") {
+                                Task {
+                                    await engine.fetchRecommendations(
+                                        userLocation: locationManager.userLocation
+                                    )
+                                }
+                            }
+                            .buttonStyle(.borderedProminent)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 40)
+
+                    } else if engine.recommendations.isEmpty {
                         EmptyRecommendationsView()
+
                     } else {
-                        VStack(spacing: 0) {
-                            ForEach(Array(recommendations.enumerated()), id: \.element.spot.id) { index, recommendation in
+                        VStack(spacing: 12) {
+                            ForEach(Array(engine.recommendations.enumerated()), id: \.element.spot.id) { index, rec in
                                 RecommendationCard(
-                                    recommendation: recommendation,
+                                    recommendation: rec,
                                     rank: index + 1,
                                     userLocation: locationManager.userLocation,
-                                    isBookmarked: bookmarkManager.isBookmarked(recommendation.spot),
-                                    onTap: {
-                                        selectedSpot = recommendation.spot
-                                        visitHistoryManager.recordVisit(recommendation.spot)
-                                    },
-                                    onBookmarkToggle: {
-                                        bookmarkManager.toggleBookmark(recommendation.spot)
-                                        refreshRecommendations()
-                                    }
+                                    isBookmarked: bookmarkManager.isBookmarked(rec.spot),
+                                    onTap: { selectedSpot = rec.spot },
+                                    onBookmarkToggle: { bookmarkManager.toggleBookmark(rec.spot) }
                                 )
-                                
-                                if index < recommendations.count - 1 {
-                                    Divider()
-                                        .padding(.leading, 70)
+                                .padding(.horizontal)
+
+                                if index < engine.recommendations.count - 1 {
+                                    Divider().padding(.horizontal)
                                 }
                             }
                         }
-                        .background(Color(.systemBackground))
-                        .cornerRadius(12)
-                        .shadow(color: .black.opacity(0.05), radius: 5, y: 2)
-                        .padding(.horizontal)
                     }
                 }
-                .padding(.bottom, 20)
+                .padding(.top)
             }
-            .background(Color(.systemGroupedBackground))
-            .navigationBarHidden(true)
-            .sheet(item: $selectedSpot) { spot in
-                WiFiSpotDetailSheet(
-                    spot: spot,
-                    userLocation: locationManager.userLocation,
-                    isBookmarked: bookmarkManager.isBookmarked(spot),
-                    onBookmarkToggle: {
-                        bookmarkManager.toggleBookmark(spot)
-                        refreshRecommendations()
-                    },
-                    onDismiss: {
-                        selectedSpot = nil
-                    }
-                )
+            .navigationTitle("For You")
+            .task {
+                await engine.fetchRecommendations(userLocation: locationManager.userLocation)
+            }
+            .onChange(of: bookmarkManager.bookmarkedSpotIDs) { _, _ in
+                Task {
+                    await engine.fetchRecommendations(userLocation: locationManager.userLocation)
+                }
             }
         }
-        .onAppear {
-            refreshRecommendations()
-        }
-        .onChange(of: bookmarkManager.bookmarkedSpotIDs) { _, _ in
-            refreshRecommendations()
-        }
-        .onChange(of: visitHistoryManager.visitHistory) { _, _ in
-            refreshRecommendations()
+        .sheet(item: $selectedSpot) { spot in
+            WiFiSpotDetailSheet(
+                spot: spot,
+                userLocation: locationManager.userLocation,
+                isBookmarked: bookmarkManager.isBookmarked(spot),
+                onBookmarkToggle: { bookmarkManager.toggleBookmark(spot) },
+                onDismiss: { selectedSpot = nil }
+            )
+            .onAppear { visitHistoryManager.recordVisit(spot) }
         }
     }
-    
-    private func refreshRecommendations() {
-        recommendations = recommendationEngine.generateRecommendations(
-            allSpots: allWiFiSpots,
-            bookmarkedSpots: bookmarkManager.bookmarkedSpotIDs,
-            visitHistory: visitHistoryManager.visitHistory,
-            userLocation: locationManager.userLocation
-        )
-    }
-}
-
-#Preview {
-    ForYouView(
-        allWiFiSpots: [],
-        locationManager: LocationManager(),
-        bookmarkManager: BookmarkManager(),
-        visitHistoryManager: VisitHistoryManager()
-    )
 }
